@@ -700,6 +700,13 @@ check_ssh_config()
 check_ssh_target()
 {
 	local _ret
+       # We need to check host key when using scp as core collector. Remind users
+       # if we found UserKnownHostsFile is set to /dev/null
+       grep "^\s*UserKnownHostsFile" /etc/ssh/ssh_config | grep "/dev/null\|\sno$" &>/dev/null
+       if [ $_ret -ne 0 ]; then
+              echo "Could not check host key, you need to change UserKnownHostsFile in /etc/ssh/ssh_config to a normal file" >&2
+              return 1
+       fi
 	ssh -q -i $SSH_KEY_LOCATION -o BatchMode=yes $DUMP_TARGET mkdir -p $SAVE_PATH
 	_ret=$?
 	if [ $_ret -ne 0 ]; then
